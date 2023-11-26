@@ -1,0 +1,488 @@
+from random import randint, choice
+import pickle
+
+print("Weaknesses&Resistances:") 
+print("1. Grass - Fire*2 Water/2|")
+print("2. Fire - Water*2 Grass/2|")    
+print("3. Water - Grass*2 Fire/2|")    
+print("Mage: Health = 80, Energy = 300, Defense = 5, Attack power = 50 Magic power = 150")
+print("Warrior: Health = 125, Energy = 120, Defense = 20, Attack power = 100 Magic power = 50")
+print("Palladyn: Health = 100, Energy = 220, Defense = 15, Attack power = 110 Magic power = 110")
+name = 0
+while name not in [1, 2, 3]:
+    try:
+        name = int(input('Choose your class: mage(1), warrior(2), palladyn(3)'))
+        if name == 1:
+            życie = int(80)
+            energia = int(300)
+            obrona = int(5)
+            moc_ataku = int(50)
+            moc_magii = int(150)
+            fr_name = "Mage"
+        elif name == 2:
+            życie = int(125)
+            energia = int(120)
+            obrona = int(20)
+            moc_ataku = int(100)
+            moc_magii = int(50)
+            fr_name = "Warrior"
+        elif name == 3:
+            życie = int(100)
+            energia = int(200)
+            obrona = int(15)
+            moc_ataku = int(110)
+            moc_magii = int(110)
+            fr_name = "Palladyn"
+        else: 
+            print("Incorrect character choice")
+    except ValueError:
+        print("Incorrect input. Please enter a number.")
+
+def magia_typ():
+    if typ_magii == 1:
+        return Vines()
+    if typ_magii == 2:
+        return waterfall()
+    if typ_magii == 3:
+        return Fire_ball()
+
+typ_magii = 0
+
+while typ_magii not in [1,2,3]:
+    try:
+        typ_magii = int(input('Choose your spell type: grass(1), water(2), fire(3)'))
+    except ValueError:
+        print("Incorrect input.")
+
+liczba_pokonanych_przeciwników = 0
+health_potion = 0
+energy_potion = 0
+currency = 0
+energia_limit = int(energia)
+życie_limit = int(życie)
+
+# ----------SAVE/LOAD-------------
+def save_game():
+    global experience, poziom, experience_poziom, życie, życie_limit, energia, energia_limit, obrona, moc_ataku, moc_magii, liczba_pokonanych_przeciwników, currency, health_potion, energy_potion
+    game_state = {
+        "experience": experience,
+        "poziom": poziom,
+        "experience_poziom": experience_poziom,
+        "życie": życie,
+        "energia": energia,
+        "życie_limit": życie_limit,
+        "energia_limit": energia_limit,
+        "obrona": obrona,
+        "moc_ataku": moc_ataku,
+        "moc_magii": moc_magii,
+        "liczba_pokonanych_przeciwników": liczba_pokonanych_przeciwników,
+        "currency": currency,
+        "health_potion": health_potion,
+        "energy_potion": energy_potion
+    }
+    
+    with open("save_game.pickle", "wb") as save_file:
+        pickle.dump(game_state, save_file)
+    print("Game saved successfully.")
+
+def load_game():
+    global poziom, experience, experience_poziom, życie, życie_limit, energia, energia_limit, obrona, moc_ataku, moc_magii
+    global liczba_pokonanych_przeciwników, currency, health_potion, energy_potion
+
+    try:
+        with open("save_game.pickle", "rb") as save_file:
+            game_state = pickle.load(save_file)
+
+        poziom = game_state["poziom"]
+        experience = game_state["experience"]
+        experience_poziom = game_state["experience_poziom"]
+        życie = game_state["życie"]
+        życie_limit = game_state["życie_limit"]
+        energia = game_state["energia"]
+        energia_limit = game_state["energia_limit"]
+        obrona = game_state["obrona"]
+        moc_ataku = game_state["moc_ataku"]
+        moc_magii = game_state["moc_magii"]
+        liczba_pokonanych_przeciwników = game_state["liczba_pokonanych_przeciwników"]
+        currency = game_state["currency"]
+        health_potion = game_state["health_potion"]
+        energy_potion = game_state["energy_potion"]
+
+        print("Game loaded successfully.")
+    except FileNotFoundError:
+        print("No saved game found.")
+
+
+
+
+# ----------levelowanie i inne funkcje-----------
+
+def display_character_stats():
+    print(f"Experience: {experience}/{experience_poziom}")
+    print(f"Currency: {currency}")
+    print(f"Health: {życie}/{życie_limit}")
+    print(f"Energy: {energia}/{energia_limit}")
+    print(f"Defense: {obrona}")
+    print(f"Melee Attack Power: {moc_ataku}")
+    print(f"Magic Power: {moc_magii}")
+
+
+global experience
+poziom = 1
+experience = 0
+experience_poziom = 2
+
+
+def poziom_up():
+    global poziom
+    global experience_poziom
+    global życie_limit
+    global energia_limit
+    global obrona
+    global moc_ataku
+    global moc_magii
+    global name
+    poziom += 1
+    experience_poziom *= 2  
+    print(f"Congratulation you leveled up to {poziom}!")
+    print(display_character_stats())
+    wybór = 0
+    while wybór not in [1, 2, 3, 4]:
+        try:
+            wybór = int(input("lvl up a stat (1 = health, 2 = energia, 3 = defense, 4 = magic power, 5 = attack power (for paladyn the attack also increases as you increase magic power and vice versa)"))
+            if wybór == 1:
+                życie_limit += 10
+            if wybór == 2:
+                energia_limit += 40 
+            if wybór == 3:
+                obrona += 5
+            if wybór == 4:
+                moc_magii += 15
+                if name == 3:
+                    moc_ataku += 5
+            if wybór == 5:
+                moc_ataku += 10
+                if name == 3:
+                    moc_magii +=5
+            else:
+                print("Incorrect stat choice.")
+        except ValueError:
+            print("Incorrect input. Please enter a number.")
+    
+    return poziom, życie_limit, energia_limit, obrona, moc_ataku, moc_magii
+
+
+# ----------POSTACIE-----------------------
+
+
+
+# ----------SKLEP----------
+def prompt_to_visit_shop():
+    global liczba_pokonanych_przeciwników
+
+    if liczba_pokonanych_przeciwników % 10 == 0 and liczba_pokonanych_przeciwników > 0:
+        while True:
+            choice = input("You've defeated enough opponents to visit the shop! Do you want to? (y/n): ").lower()
+            if choice == 'y':
+                visit_shop()
+                break
+            elif choice == 'n':
+                break
+            else:
+                print("Invalid choice.")
+
+
+def energia_usable():
+    global energia
+    global energy_potion
+    energia += 30
+    energy_potion -= 1
+def health_usable():
+    global życie
+    global health_potion
+    życie += 30
+    health_potion -= 1
+
+
+
+# Function to handle the shop interaction.
+def shop_menu():
+        print("-------- SHOP MENU --------")
+        print("1. Buy Health Potion - 20 currency")
+        print("2. Buy Max Health Potion - 60 currency")
+        print("3. Buy Energy Potion - 20 currency")
+        print("4. Buy Max Energy Potion - 60 currency")
+        print("5. Sell Health Potion - 10 currency")
+        print("6. Sell Energy Potion - 10 currency")
+        print("7. Exit Shop")
+
+def visit_shop():
+    global currency
+    global health_potion
+    global energy_potion
+    global życie_limit
+    global energia_limit
+    
+
+    # ilość przeciwników pokonanych by odblokować sklep
+    if liczba_pokonanych_przeciwników % 8 == 0 and liczba_pokonanych_przeciwników > 0:
+        shop_menu()
+
+        while True:
+            choice = input("Enter your choice: ")
+
+            if choice == '1':
+                if currency >= 10:
+                    currency -= 20
+                    health_potion += 1
+                    print(f"Bought 1 Health Potion. Remaining currency: {currency}. ")
+                    shop_menu()
+                else:
+                    print("Not enough currency to buy Health Potion.")
+            elif choice == '3':
+                if currency >= 10:
+                    currency -= 20
+                    energy_potion += 1
+                    print(f"Bought 1 Energy Potion. Remaining currency: {currency}.")
+                    shop_menu()
+                else:
+                    print("Not enough currency to buy Energy Potion.")
+            elif choice == '4':
+                if currency >= 50:
+                    currency -= 60
+                    energia_limit += 10
+                    print(f"Bought Max Energy Potion (used automatically), Max energy:{energia_limit}. Remaining currency: {currency}.")
+                    shop_menu()
+                else:
+                    print("Not enough currency to buy Max Energy Potion.")
+            elif choice == '2':
+                if currency >= 50:
+                    currency -= 60
+                    życie_limit += 10
+                    print(f"Bought Max Health Potion (used automatically), Max health:{życie_limit}. Remaining currency: {currency}.")
+                    shop_menu()
+                else:
+                    print("Not enough currency to buy Max Health Potion.")
+            elif choice == '5':
+                if health_potion > 0:
+                    currency += 5
+                    health_potion -= 1
+                    print(f"Sold 1 Health Potion. Remaining currency: {currency}.")
+                else:
+                    print(f"You don't have any Health Potions to sell. Remaining currency: {currency}.")
+            elif choice == '6':
+                if energy_potion > 0:
+                    currency += 5
+                    energy_potion -= 1
+                    print(f"Sold 1 Energy Potion. Remaining currency: {currency}.")
+                else:
+                    print(f"You don't have any Energy Potions to sell. Remaining currency: {currency}.")
+            elif choice == '7':
+                print(f"Exiting Shop. Remaining currency: {currency}.")
+                break
+            else:
+                print("Invalid choice. Please enter a number between 1 and 7.")
+
+
+
+
+
+
+# ----------ATAKI----------------------- 
+
+
+def melee():
+    if 4 == opponent[5]:
+        result = moc_ataku / 5 * 2  
+        print("That attack was super effective!")
+    elif 5 == opponent[5]:
+        result = moc_ataku / 5 / 2
+        print("That attack was not very effective.")
+    else:
+        result = moc_ataku / 5
+    return result
+
+
+def waterfall():
+    global energia
+    if energia < 20:
+        print("-"*40)
+        print("You dont have enough energy!")
+        return wybierz_atak()
+    energia -= 20
+    if 2 == opponent[5]:
+        result = moc_magii / 5 * 2  
+        print("That attack was super effective!")
+    elif 1 == opponent[5]:
+        result = moc_magii / 5 / 2
+        print("That attack was not very effective.")
+    else:
+        result = moc_magii / 5
+
+    return result
+
+def Vines():
+    global energia
+    if energia < 20:
+        print("-"*40)
+        print("You dont have enough energy!")
+        return wybierz_atak()
+    energia -= 20
+    if 3 == opponent[5]:
+        result = moc_magii / 5 * 2
+        print("That attack was super effective!")
+    elif 2 == opponent[5]:
+        result = moc_magii / 5 / 2
+        print("That attack was not very effective.")
+    else:
+        result = moc_magii / 5
+    return result
+
+def Fire_ball():
+    global energia
+    if energia < 20:
+        print("-"*40)
+        print("You dont have enough energy!")
+        return wybierz_atak()
+    energia -= 20
+    if 1 == opponent[5]:
+        result = moc_magii / 5 * 2  
+        print("That attack was super effective!")
+    elif 3 == opponent[5]:
+        result = moc_magii / 5 / 2
+        print("That attack was not very effective.")
+    else:
+        result = moc_magii / 5
+
+    return result
+
+
+def wybierz_atak():
+    global życie
+    global energia
+    global poziom
+    print('Q - Melee combat')
+    print('W - Magic')                     
+    print('E - Health potion')
+    print('R - Energy potion')     
+    print('T - load game')
+                  
+
+    co = input().upper()
+    while co not in ['q', 'w', 'e,', 'r', 't',]:
+        try:
+            if co == 'Q':
+                return melee()
+            if co == 'W':
+                result = int(magia_typ())
+                return result
+            if co == 'E':
+                health_usable()                                   #dokończ
+                return 0
+            if co == 'R':
+                energia_usable()
+                return 0
+            if co == 'T':
+                load_game()
+                return wybierz_atak()              
+            else:
+                print("Incorrect action")
+                return wybierz_atak()
+        except ValueError:
+            print("Incorrect input.")
+
+
+
+
+# ----------WALKA-----------------------
+def koniec():
+    print("-"*40)
+    print("FINITO!, your dead")
+    print(f"SCORE: {liczba_pokonanych_przeciwników}")
+def wygrana():
+    print("-"*40)
+    print("Congratulations, you won!")
+    print(f"SCORE: {liczba_pokonanych_przeciwników}")
+
+
+def random_oponent():
+    global życie, energia, życie_limit, energia_limit
+    opponents = [
+        ["Goblin", 35, 10, 2, 17, 1, 0],
+        ["Water Nimf", 40, 12, 2, 17, 3, 0],
+        ["Fire Spirit", 30, 15, 2, 17, 2, 0]
+    ]
+    if liczba_pokonanych_przeciwników > 9:
+        opponents = [
+            ["Baby Fire Elemental", 70, 5, 20, 20, 2, 0],
+            ["Wolf", 70, 5, 20, 20, 1, 0],
+            ["Gigantic Turtle", 70, 5, 20, 20, 3, 0]
+        ]
+    if liczba_pokonanych_przeciwników > 19:
+        opponents = [
+            ["Bandit", 90, 30, 25, 25, 1, 0],
+            ["Adult Fire Spirit", 90, 30, 25, 25, 2, 0],
+            ["Man Eating Turtle", 90, 30, 25, 25, 3, 0]
+        ]
+    if liczba_pokonanych_przeciwników > 29:
+        opponents = [
+            ["Alpha Ogre", 150, 40, 34, 34, 1, 0],
+            ["Fire Elemental", 150, 40, 34, 34, 2, 0],
+            ["Water Elemental", 150, 40, 34, 34, 3, 0]
+        ]
+    if liczba_pokonanych_przeciwników == 39:
+        życie_limit = życie
+        energia_limit = energia
+        opponents = [
+            ["Dragon", 350, 70, 0, 0, 0, 0]
+        ]
+    return choice(opponents)
+
+
+
+
+
+
+
+
+
+
+while życie > 0:
+    opponent = random_oponent()
+    print("-"*40)
+
+    while opponent[1] > 0 and życie > 0:
+        print(f"You, a {fr_name} is fighting with a {opponent[0]}")
+        obrażenia = max(1, opponent[2] - obrona) #porównuje 0 z dmg, wybiera wyższą
+        print(f"Your opponent has {opponent[1]} HP and has dealt you {obrażenia} dmg")
+       
+        życie -= obrażenia 
+        if życie <= 0:
+            koniec()
+            break
+        
+        if liczba_pokonanych_przeciwników == 50:
+            wygrana()
+            break
+
+        print(f"You have {życie} HP & {energia} energy")
+        atak = int(wybierz_atak()) #int?
+        opponent[1] -= atak
+        print(f"You dealt {atak} damage")
+
+    if opponent[1] <= 0:
+        print('Opponent deafeated')
+        liczba_pokonanych_przeciwników += 1
+        experience += opponent[3]
+        currency += opponent [4]
+        if experience > experience_poziom:
+            poziom_up()
+        prompt_to_visit_shop()
+        życie += int(życie / 10)
+        if życie > życie_limit:
+            życie = życie_limit
+        energia += int(energia_limit / 10)
+        if energia > energia_limit:
+            energia = energia_limit
+        save_game()
+        
